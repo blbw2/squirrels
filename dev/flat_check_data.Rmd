@@ -1,0 +1,362 @@
+---
+title: "flat_check_data.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(stringr)
+library(dplyr)
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+```
+
+# check_plus_in_primary_fur_color
+    
+```{r function-check_plus_in_primary_fur_color}
+#' Check the values of primary fur color
+#'
+#' @param primary_fur_color Character. A vector with the primary fur color.
+#' @return a vector of logicals
+#' @importFrom stringr str_detect
+#' @export
+check_plus_in_primary_fur_color <- function(primary_fur_color) {
+  
+  if (isFALSE(is.character(primary_fur_color))) {
+    stop("primary_fur_color is not a character")
+  }
+  
+  
+  colors_are_ok <- !str_detect(string = primary_fur_color, pattern = "\\+")
+  
+  return(colors_are_ok)
+  
+}
+```
+  
+```{r example-check_plus_in_primary_fur_color}
+vec <- c("Black", "Black+Cinnamon", "Cinnamon", NA)
+check_plus_in_primary_fur_color(primary_fur_color = vec)
+```
+  
+```{r tests-check_plus_in_primary_fur_color}
+test_that("check_plus_in_primary_fur_color works", {
+  
+  expect_true(inherits(check_plus_in_primary_fur_color, "function")) 
+  
+  
+  vect_ok <- c("Black", "Black+Cinnamon", "Cinnamon", NA)
+  expect_equal(object = check_plus_in_primary_fur_color(primary_fur_color = vect_ok), 
+               expected = c(TRUE, FALSE, TRUE, NA)
+  )
+  
+  expect_equal(object = check_plus_in_primary_fur_color(primary_fur_color = c("Black", "Cinnamon", "Cinnamon", NA)), 
+               expected = c(TRUE, TRUE, TRUE, NA)
+  )
+  
+  expect_error(object = check_plus_in_primary_fur_color(primary_fur_color = 9999), 
+                 regexp = "primary_fur_color is not a character")
+  
+})
+```
+  
+# check_coordinates
+    
+```{r function-check_coordinates}
+#' Checks if the coordinates are in Central Park
+#'
+#' @param latitude numeric. A vector with the latitude.
+#' @param longitude numeric. A vector with the longitude.
+#' @return a vector of logicals
+#'
+#' @export
+check_coordinates <- function(latitude, longitude) {
+  if (isFALSE(is.numeric(latitude)) | isFALSE(is.numeric(longitude))) {
+    stop("latitude and longitude should be numeric")
+  }
+
+  coordinates_are_ok <-
+    latitude > 40.76400 & latitude < 40.80100 &
+      longitude > -73.98300 & longitude < -73.94735
+
+  return(coordinates_are_ok)
+}
+```
+  
+```{r example-check_coordinates}
+both_valid_latitude <- c(40.766, 40.799)
+both_valid_longitude <- c(-73.96, -73.95)
+both_invalid_latitude <- c(30, 32)
+both_invalid_longitude <- c(-100, -99)
+one_invalid_latitude <- c(40.766, 50)
+one_invalid_longitude <- c(-73.95, -100)
+
+check_coordinates(
+  latitude = both_valid_latitude,
+  longitude = both_valid_longitude
+)
+
+check_coordinates(
+  latitude = both_invalid_latitude,
+  longitude = both_invalid_longitude
+)
+
+check_coordinates(
+  latitude = one_invalid_latitude,
+  longitude = one_invalid_longitude
+)
+```
+  
+```{r tests-check_coordinates}
+test_that("check_coordinates works", {
+  expect_true(inherits(check_coordinates, "function")) 
+  
+  
+both_valid_latitude <- c(40.766, 40.799)
+both_valid_longitude <- c(-73.96, -73.95)
+both_invalid_latitude <- c(30, 32)
+both_invalid_longitude <- c(-100, -99)
+one_invalid_latitude <- c(40.766, 50)
+one_invalid_longitude <- c(-73.95, -100)
+
+  
+expect_equal(object = check_coordinates(
+  latitude = both_valid_latitude,
+  longitude = both_valid_longitude
+), expected = c(TRUE, TRUE))
+
+
+expect_equal(object = check_coordinates(
+  latitude = both_invalid_latitude,
+  longitude = both_invalid_longitude
+), expected = c(FALSE, FALSE))
+
+
+expect_equal(object = check_coordinates(
+  latitude = one_invalid_latitude,
+  longitude = one_invalid_longitude
+), expected = c(TRUE, FALSE))
+
+  
+})
+
+
+test_that("check_coordinates works with an error", {
+  
+  expect_error(object =  check_coordinates(
+            latitude = "coucou",
+            longitude = "ca va"
+              ), regexp = "latitude and longitude should be numeric")
+  
+})
+```
+  
+  
+# check_presence_of_required_columns
+
+Cette fonction permet de vérifier qu'un `data_frame` contient bien les trois colonnes attendues : `primary_fur_color`, `lat`, et `long`.
+
+```{r development-check_presence_of_required_columns}
+
+  check_color <- "primary_fur_color" %in% names(nyc_squirrels_reduced)
+  check_lat <- "lat" %in% names(nyc_squirrels_reduced)
+  check_long <- "long" %in% names(nyc_squirrels_reduced)
+all_columns_check <- c("primary_fur_color" = check_color, "lat" = check_lat, "long" = check_long)
+absent_columns <- paste(names(all_columns_check[all_columns_check == FALSE]))
+check_result <- any(isFALSE(all_columns_check))
+
+
+
+
+
+
+
+```
+    
+```{r function-check_presence_of_required_columns}
+#' Title
+#' 
+#' Description
+#' 
+#' @param data Un `data_frame`. NB: les colonnes doivent avoir exactement les noms attendus ("primary_fur_color", "lat", "long").
+#'
+#' @return check_result Un booléen.
+#' 
+#' @export
+check_presence_of_required_columns <- function(data){
+  
+  check_color <- "primary_fur_color" %in% names(data)
+  check_lat <- "lat" %in% names(data)
+  check_long <- "long" %in% names(data)
+all_columns_check <- c("primary_fur_color" = check_color, "lat" = check_lat, "long" = check_long)
+absent_columns <- paste(names(all_columns_check[all_columns_check == FALSE]))
+check_result <- any(isFALSE(all_columns_check))
+if (check_result) {
+  stop(paste("Il manque les colonnes suivantes :", absent_columns))
+}
+else{
+  check_result <- TRUE
+  return(check_result)
+  
+}
+}
+```
+  
+```{r example-check_presence_of_required_columns}
+check_presence_of_required_columns()
+```
+  
+```{r tests-check_presence_of_required_columns}
+test_that("check_presence_of_required_columns works", {
+  expect_true(inherits(check_presence_of_required_columns, "function")) 
+})
+```
+  
+```{r example-check_presence_of_required_columns}
+
+  
+
+test_df <- data.frame(lati = 70, long = 73, fur_color = "Black")
+
+check_presence_of_required_columns(test_df)
+check_presence_of_required_columns(nyc_squirrels_reduced)
+
+
+```
+
+```{r test-check_presence_of_required_columns}
+
+data("nyc_squirrels_reduced")
+expected_result <- TRUE
+
+test_that("check_presence_of_required_columns works with package sample data", {
+  
+  expect_true(object =  check_presence_of_required_columns(
+            nyc_squirrels_reduced))
+  
+})
+
+```
+
+# filter_squirrels_data_based_on_integrity
+
+```{r development}
+
+testdata <- nyc_squirrels_reduced
+
+check_columns <- check_presence_of_required_columns(testdata)
+
+check_color <- check_plus_in_primary_fur_color(testdata$primary_fur_color)
+
+check_coord <- check_coordinates(testdata$lat, testdata$long)
+
+
+df_squirrels_with_type <- testdata |>
+    mutate(type = case_when(
+      is.na(check_color) | is.na(check_coord) ~ "missing",
+      check_color & check_coord ~ "valid",
+      !check_color | !check_coord ~ "invalid"
+))
+
+
+valid_data <- testdata |>
+    filter(type == "valid")
+invalid_data <- testdata |>
+    filter(type == "invalid")
+missing_data <- testdata |>
+    filter(type == "missing")
+
+list(df_valid_data = valid_data,
+     df_invalid_data = invalid_data,
+     df_missing_data = missing_data)
+```
+
+    
+```{r function-filter_squirrels_data_based_on_integrity}
+#' Title
+#' 
+#' Description
+#' 
+#' @param data `data_frame`: jeu de données sur écureuils
+#' 
+#' @importFrom dplyr case_when filter mutate
+#'
+#' @return 
+#' 
+#' @export
+filter_squirrels_data_based_on_integrity <- function(data){
+
+check_columns <- check_presence_of_required_columns(data)
+
+check_color <- check_plus_in_primary_fur_color(data$primary_fur_color)
+
+check_coord <- check_coordinates(data$lat, data$long)
+
+
+df_squirrels_with_type <- data |>
+    mutate(type = case_when(
+      is.na(check_color) | is.na(check_coord) ~ "missing",
+      check_color & check_coord ~ "valid",
+      !check_color | !check_coord ~ "invalid"
+))
+
+
+valid_data <- data |>
+    filter(type == "valid")
+invalid_data <- data |>
+    filter(type == "invalid")
+missing_data <- data |>
+    filter(type == "missing")
+
+list(df_valid_data = valid_data,
+     df_invalid_data = invalid_data,
+     df_missing_data = missing_data)   
+}
+```
+  
+```{r example-filter_squirrels_data_based_on_integrity}
+filter_squirrels_data_based_on_integrity(nyc_squirrels_reduced)
+
+mydata <- readr::read_csv(system.file("nyc_squirrels_sample.csv", package = "squirrels"))
+
+data_integrity <- filter_squirrels_data_based_on_integrity(mydata)
+```
+  
+```{r tests-filter_squirrels_data_based_on_integrity}
+test_that("filter_squirrels_data_based_on_integrity works", {
+  expect_true(inherits(filter_squirrels_data_based_on_integrity, "function")) 
+  
+  mydata <- readr::read_csv(system.file("nyc_squirrels_sample.csv", package = "squirrels"))
+  
+  data_integrity <- filter_squirrels_data_based_on_integrity(mydata)
+  
+  expect_equal(
+    nrow(data_integrity$df_valid_data),
+    393
+  )
+  
+  expect_equal(
+    nrow(data_integrity$df_invalid_data),
+    0
+  )
+  expect_equal(
+    nrow(data_integrity$df_missing_data),
+    7
+  )
+})
+
+
+```
+  
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_check_data.Rmd", vignette_name = "Check data", open_vignette = FALSE, overwrite = TRUE)
+```
+
