@@ -1,6 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# Versionnage
+
+Mise à jour: squirrels est désormais versionné!
+
 # squirrels
 
 <!-- badges: start -->
