@@ -42,10 +42,16 @@ fusen::init_share_on_github()
 
 ```{r, eval=FALSE}
 usethis::use_git()
+
+usethis::use_git_remote("origin",
+                        url = "https://github.com/blbw2/squirrels.git",
+                        overwrite = TRUE)
 # Deal with classical files to ignore
 usethis::git_vaccinate()
 # Use main for primary branch
 usethis::git_default_branch_rename()
+
+
 ```
 
 # Set extra sources of documentation
