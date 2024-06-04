@@ -1,0 +1,134 @@
+---
+title: "export_results.Rmd empty"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r development, include=FALSE}
+library(testthat)
+library(utils)
+library(tools)
+library(glue)
+
+temp_test<- tempfile(pattern ="exportscsv")
+dir.create(temp_test)
+
+fs::dir_tree(path = temp_test)
+rstudioapi::filesPaneNavigate(temp_test)
+
+df <- irisdf <- irisfolderpath
+input_path <- "exports/csv/monfichier.csv"
+folder_path <- dirname(input_path)
+dir.create(folder_path, recursive = TRUE)
+write.csv2(df, file = input_path)
+check_extension = file_ext(input_path)
+
+if(check_extension == "csv"){
+  message("Le fichier créé a bien une extension .csv")
+}
+
+if(!file_exists(folder_path)){
+  stop(glue("Le dossier cible \"{folder_path}\" n'existe pas."))
+}
+return(normalizePath(folderpath))
+
+```
+
+```{r development-load}
+# Load already included functions if relevant
+pkgload::load_all(export_all = FALSE)
+
+```
+
+# export_results
+
+```{r function-save_as_csv}
+#' export_results Title
+#'
+#' @param input_path 
+#' @param df A `data_frame`
+#'
+#' @return full_path A `string` indicating the full path of the created file.
+#' @importFrom glue glue
+#' @importFrom tools file_ext fileutils
+#' @importFrom utils write.csv2
+#' @export
+#'
+#' @examples
+save_as_csv <- function(df, input_path) {
+
+
+if(isFALSE(inherits(df,"data.frame"))){
+  stop("L'argument `df` n'est pas un `data_frame`.")
+}
+
+if(isTRUE(nrow(df) == 0)){
+  stop("Le `df` fourni contient 0 lignes.")
+}
+
+  
+folder_path <- dirname(input_path)
+dir.create(folder_path, recursive = TRUE)
+write.csv2(df, file = input_path)
+check_extension = file_ext(input_path)
+
+if(!check_extension == "csv"){
+  message("Le fichier créé n'a pas une extension .csv")
+}
+
+if(!file.exists(folder_path)){
+  stop(glue("Le dossier cible \"{folder_path}\" n'existe pas."))
+}
+return(normalizePath(input_path))
+}
+```
+
+```{r examples-export_results}
+example_path <- file.path(tempfile(pattern="example_csv"), "example1.csv")
+dirname(example_path)
+normalizePath(example_path)
+save_as_csv(iris, example_path)
+
+```
+
+```{r tests-export_results}
+test_that("save_as_csv works", {# Création d'un dossier temporaire
+  
+mon_dossier_temp <- tempfile(pattern = "savecsv")
+dir.create(mon_dossier_temp)
+
+# ok : le fichier .csv est enregistré dans le projet actuel
+expect_true(iris |> save_as_csv(file.path(mon_dossier_temp, "output.csv")),
+             
+)
+
+# ok : le fichier .csv est enregistré et le fichier s'ouvre
+iris |>
+  save_as_csv(file.path(mon_dossier_temp, "output.csv")) |>
+  browseURL()
+
+})
+
+
+test_that("save_as_csv errors", {
+  # erreur : l'extension du fichier à créer n'est pas la bonne
+iris |> save_as_csv(file.path(mon_dossier_temp, "output.xlsx"),
+                    "Le fichier créé n'a pas une extension .csv")
+
+# erreur : la fonction n'est pas appliquée à un data.frame
+NULL |> save_as_csv(file.path(mon_dossier_temp, "output.csv"))
+
+# erreur : le chemin où doit être enregistré le fichier n'existe pas
+iris |> save_as_csv(file.path(mon_dossier_temp, "nexiste/pas/output.csv"))
+  
+})
+```
+
+
+```{r development-inflate, eval=FALSE}
+# Run but keep eval=FALSE to avoid infinite loop
+# Execute in the console directly
+fusen::inflate(flat_file = "dev/flat_export_results.Rmd", vignette_name = "Exporter ses résultas")
+```
+
