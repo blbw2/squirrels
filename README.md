@@ -5,6 +5,10 @@
 
 Mise à jour: squirrels est désormais versionné!
 
+# Gestion des issues
+
+04/06/2024 : Ce package a été créé dans le cadre d’une formation N2.
+
 # squirrels
 
 <!-- badges: start -->
