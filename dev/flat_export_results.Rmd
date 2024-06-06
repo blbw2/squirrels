@@ -17,11 +17,18 @@ dir.create(temp_test)
 fs::dir_tree(path = temp_test)
 rstudioapi::filesPaneNavigate(temp_test)
 
-df <- irisdf <- irisfolderpath
+df <- iris
 input_path <- "exports/csv/monfichier.csv"
 folder_path <- dirname(input_path)
 dir.create(folder_path, recursive = TRUE)
+dots <- list(col.names = FALSE, row.names = FALSE, na="na")
+
 write.csv2(df, file = input_path)
+write.csv2(df, file = input_path, col.names = c("a","b","c","d","e"), row.names=  FALSE, na = "na")
+
+write.csv2(df, file = input_path, col.names = NA, row.names=  FALSE, na = "na")
+rstudioapi::filesPaneNavigate(input_path)
+
 check_extension = file_ext(input_path)
 
 if(check_extension == "csv"){
@@ -56,31 +63,31 @@ pkgload::load_all(export_all = FALSE)
 #' @export
 #'
 #' @examples
-save_as_csv <- function(df, input_path) {
+save_as_csv <- function(df, mypath,...) {
 
 
 if(isFALSE(inherits(df,"data.frame"))){
-  stop("L'argument `df` n'est pas un `data_frame`.")
+  stop("df is not a data frame")
 }
 
 if(isTRUE(nrow(df) == 0)){
   stop("Le `df` fourni contient 0 lignes.")
 }
 
-  
-folder_path <- dirname(input_path)
+dots <- list(...)  
+folder_path <- dirname(mypath)
 dir.create(folder_path, recursive = TRUE)
-write.csv2(df, file = input_path)
-check_extension = file_ext(input_path)
+write.csv2(df, file = mypath,...)
+check_extension = file_ext(mypath)
 
 if(!check_extension == "csv"){
-  message("Le fichier créé n'a pas une extension .csv")
+  stop(glue("mypath must be a csv"))
 }
 
 if(!file.exists(folder_path)){
   stop(glue("Le dossier cible \"{folder_path}\" n'existe pas."))
 }
-return(normalizePath(input_path))
+return(normalizePath(mypath))
 }
 ```
 
@@ -89,7 +96,10 @@ example_path <- file.path(tempfile(pattern="example_csv"), "example1.csv")
 dirname(example_path)
 normalizePath(example_path)
 save_as_csv(iris, example_path)
+extra_args <- c(col.names = FALSE, na = "NA_modified")
 
+
+save_as_csv(iris, example_path, col.names = FALSE, na = "NA_modified")
 ```
 
 ```{r tests-export_results}
@@ -100,38 +110,46 @@ test_that("save_as_csv works", {# Création d'un dossier temporaire
   
 mon_dossier_temp <- tempfile(pattern = "savecsv")
 dir.create(mon_dossier_temp)
+normalizePath(mon_dossier_temp)
 
-# ok : le fichier .csv est enregistré dans le projet actuel
-expect_true(iris |> save_as_csv(file.path(mon_dossier_temp, "output.csv")),
-             
-)
-
-# ok : le fichier .csv est enregistré et le fichier s'ouvre
-iris |>
-  save_as_csv(file.path(mon_dossier_temp, "output.csv")) |>
-  browseURL()
-
-})
-
-
-test_that("save_as_csv errors", {
-  # erreur : l'extension du fichier à créer n'est pas la bonne
-iris |> save_as_csv(file.path(mon_dossier_temp, "output.xlsx"),
-                    "Le fichier créé n'a pas une extension .csv")
+# erreur : l'extension du fichier à créer n'est pas la bonne
+expect_error(
+  iris |> save_as_csv(file.path(mon_dossier_temp, "output.xlsx")),
+  "mypath must be a csv")
 
 # erreur : la fonction n'est pas appliquée à un data.frame
-NULL |> save_as_csv(file.path(mon_dossier_temp, "output.csv"))
+expect_error(
+  NULL |> save_as_csv(file.path(mon_dossier_temp, "output.csv")),
+  "df is not a data frame")
 
 # erreur : le chemin où doit être enregistré le fichier n'existe pas
-iris |> save_as_csv(file.path(mon_dossier_temp, "nexiste/pas/output.csv"))
+# expect_error(
+#   iris |> save_as_csv(file.path(mon_dossier_temp, "nexiste/pas/output.csv")),
+#   "mypath does not exist")
+#   
+ })
+
+
+test_that("dots are passed on as arguments", {
+  
+mon_dossier_temp <- tempfile(pattern = "savecsv")
+dir.create(mon_dossier_temp)
+export_path <- file.path(mon_dossier_temp, "output.csv")
+iris |> save_as_csv(export_path, row.names = FALSE)
+reimport <- read.csv(export_path, sep = ";")  
+
+
+  expect_equal(ncol(reimport),
+               5)
   
 })
+
 ```
 
 
 ```{r development-inflate, eval=FALSE}
 # Run but keep eval=FALSE to avoid infinite loop
 # Execute in the console directly
-fusen::inflate(flat_file = "dev/flat_export_results.Rmd", vignette_name = "Exporter ses résultas")
+fusen::inflate(flat_file = "dev/flat_export_results.Rmd", vignette_name = "Exporter ses résultats")
 ```
 
