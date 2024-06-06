@@ -144,6 +144,8 @@ reimport <- read.csv(export_path, sep = ";")
   
 })
 
+rstudioapi::filesPaneNavigate(export_path)
+
 ```
 
 
